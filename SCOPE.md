@@ -17,7 +17,7 @@ The agent only writes drafts. It never sends anything.
 
 - **Live demo:** a `public_brand/` folder in the repo. It holds copies of Grace's bio, services, how-I-work, FAQ and portfolio files, with all price figures removed. Grace reviews this folder before it is committed. The lessons note is not included.
 - **Local:** an optional `--brain` flag uses the Second Brain API at `http://127.0.0.1:8000` instead.
-- **Retrieval:** BM25 keyword search over `public_brand/` chunks. No embedding calls.
+- **Retrieval:** BM25 keyword search over `public_brand/` chunks. No embedding calls. A trailing plural "s"/"es" is dropped from words in both queries and chunks, so "refund" matches "refunds".
 
 ## Safety (enforced in code)
 
@@ -25,7 +25,10 @@ The agent only writes drafts. It never sends anything.
   > Pricing depends on scope. I'll send you a quote after a short call.
 
   Percentages such as "50% upfront" are allowed, because they are payment terms, not prices.
+  - "N250,000" (a capital N directly followed by digits) counts as a naira amount and is replaced.
+  - Bare shorthand such as "5m" or "2m" counts as money (millions) and is replaced, even though it could mean minutes or metres. This leans safe.
 - **Number check:** every number in the draft must appear in the retrieved chunks. If one does not, the draft is rejected and a safe fallback is returned.
+  - Digits inside words are checked too: "4pm" fails unless "4" appears in the retrieved chunks. This leans safe.
 - **Web page notice:** "Use made-up messages only. Don't enter personal details."
 
 ## Engine
@@ -58,6 +61,10 @@ The agent only writes drafts. It never sends anything.
 | Refund question | Says no refunds |
 | Code ownership | Client owns the code after final payment |
 | Price question | No figures; the quote line is used |
+
+## Known limitations (v1)
+
+- The number check only covers numbers written in digits. Numbers written as words ("three weeks") are not checked.
 
 ## Out of scope for v1
 
