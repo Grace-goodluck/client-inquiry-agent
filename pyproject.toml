@@ -2,6 +2,7 @@
 name = "client-inquiry-agent"
 version = "0.1.0"
 description = "Reads one client message and drafts a categorised, sourced reply in Grace's voice. Drafts only; never sends."
+readme = "README.md"
 authors = [
     { name = "Grace Ihuoma Nwakama", email = "goodluckgrace08@gmail.com" }
 ]
@@ -11,12 +12,27 @@ dependencies = [
     "httpx",
 ]
 
+[project.optional-dependencies]
+web = [
+    "fastapi>=0.110",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+    "tzdata",
+    "uvicorn>=0.29",
+]
+
 [project.scripts]
 client-inquiry = "client_inquiry_agent.cli:main"
+client-inquiry-web = "client_inquiry_agent.web.app:main"
 
 [dependency-groups]
 dev = [
     "pytest>=8",
+    # the web extra minus uvicorn, so `uv run pytest` can import and test the web layer
+    "fastapi>=0.110",
+    "jinja2>=3.1",
+    "python-multipart>=0.0.9",
+    "tzdata",
 ]
 
 [tool.pytest.ini_options]

@@ -68,6 +68,17 @@ def is_retryable(exc: BaseException) -> bool:
     return is_unavailable(exc) or is_deadline_exceeded(exc) or is_dropped_connection(exc)
 
 
+def failure_kind(exc: BaseException) -> str:
+    """Classify a failed call for a public message: "quota" (429), "busy" (503/504/dropped/timeout)
+    or "other". Looks at the original error behind an LLMError."""
+    cause = exc.__cause__ or exc
+    if is_quota_exceeded(cause):
+        return "quota"
+    if is_retryable(cause):
+        return "busy"
+    return "other"
+
+
 def _event_wait(event: threading.Event, seconds: float) -> None:
     event.wait(seconds)
 

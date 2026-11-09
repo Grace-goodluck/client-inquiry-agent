@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client Inquiry Agent by TechByGrace</title>
+<meta name="description" content="Paste a made-up client message and get a draft reply in Grace's voice, written only from TechByGrace's public brand files.">
+<style>
+  :root {
+    --bg: #06281F;
+    --surface: #0B3B2E;
+    --gold: #D4AF37;
+    --pale-gold: #E9D8A6;
+    --text: #F3EEE2;
+    --muted: #9FB3A8;
+    --line: rgba(233, 216, 166, 0.18);
+    --error-bg: rgba(212, 175, 55, 0.12);
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-wrap: anywhere;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: clamp(1.5rem, 4.5vw, 2.1rem); line-height: 1.25; margin: 0; color: var(--pale-gold); }
+  .byline { color: var(--gold); font-size: 1rem; font-weight: 600; margin: 2px 0 12px; }
+  h2 { font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 24px 0 8px; font-weight: 600; }
+  p { margin: 0 0 12px; }
+  .lead { color: var(--muted); }
+  .note {
+    border-left: 3px solid var(--gold);
+    background: var(--surface);
+    padding: 10px 14px;
+    border-radius: 6px;
+    color: var(--pale-gold);
+    margin: 16px 0 24px;
+  }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 20px; }
+  label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--pale-gold); }
+  textarea {
+    width: 100%;
+    min-height: 160px;
+    resize: vertical;
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 12px;
+    font: inherit;
+  }
+  textarea:focus, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; margin-top: 8px; }
+  .counter { color: var(--muted); font-size: 0.9rem; font-variant-numeric: tabular-nums; }
+  .counter.near { color: var(--gold); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .examples span { color: var(--muted); font-size: 0.9rem; width: 100%; }
+  button {
+    font: inherit;
+    cursor: pointer;
+    border-radius: 999px;
+    padding: 8px 16px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--pale-gold);
+  }
+  button:hover { background: rgba(212, 175, 55, 0.12); }
+  button.primary { background: var(--gold); color: var(--bg); font-weight: 700; padding: 10px 22px; }
+  button.primary:hover { background: var(--pale-gold); }
+  button[disabled] { opacity: 0.6; cursor: wait; }
+  .error { background: var(--error-bg); border: 1px solid var(--gold); color: var(--pale-gold); border-radius: 8px; padding: 12px 14px; margin: 0 0 16px; }
+  .result { margin-top: 24px; }
+  .badge { display: inline-block; background: var(--gold); color: var(--bg); font-weight: 700; border-radius: 999px; padding: 2px 12px; font-size: 0.9rem; }
+  .draft-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  .draft-head h2 { margin: 0; }
+  .draft { white-space: pre-wrap; background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-top: 8px; }
+  ul { margin: 0; padding-left: 20px; }
+  li { margin: 2px 0; }
+  .muted { color: var(--muted); }
+  .flags { color: var(--muted); font-size: 0.9rem; margin-top: 16px; }
+  .sent { margin-top: 20px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--pale-gold); font-weight: 600; }
+  footer { margin-top: 32px; color: var(--muted); font-size: 0.85rem; }
+  footer a { color: var(--pale-gold); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Client Inquiry Agent</h1>
+  <p class="byline">by TechByGrace</p>
+  <p class="lead">Paste a client message and get a draft reply in Grace's voice, written only from her public brand files.</p>
+  <p class="note">Use made-up messages only. Don't enter personal details.</p>
+
+  <form class="card" method="post" action="/draft" id="inquiry-form">
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    <label for="message">Client message</label>
+    <textarea id="message" name="message" maxlength="{{ max_chars }}" required
+              placeholder="e.g. Hi Grace, do you work on weekends?" aria-describedby="counter">{{ message }}</textarea>
+    <div class="row">
+      <span class="counter" id="counter" aria-live="polite">{{ message|length }} / {{ "{:,}".format(max_chars) }}</span>
+      <button type="submit" class="primary" id="submit">Draft a reply</button>
+    </div>
+    <div class="examples">
+      <span>Or try an example:</span>
+      {% for label, text in examples %}
+      <button type="button" class="example" data-message="{{ text }}">{{ label }}</button>
+      {% endfor %}
+    </div>
+  </form>
+
+  {% if result %}
+  <section class="card result" aria-labelledby="result-title">
+    <h2 id="result-title" style="margin-top:0">Category</h2>
+    <span class="badge">{{ category_labels.get(result.category, result.category) }}</span>
+
+    <div class="draft-head" style="margin-top:24px">
+      <h2>Draft reply</h2>
+      <button type="button" id="copy">Copy draft</button>
+    </div>
+    <div class="draft" id="draft">{{ result.reply }}</div>
+
+    <h2>Sources</h2>
+    {% if result.sources %}
+    <ul>{% for s in result.sources %}<li>{{ s }}</li>{% endfor %}</ul>
+    {% else %}<p class="muted">None</p>{% endif %}
+
+    <h2>Needs Grace</h2>
+    {% if result.needs_grace %}
+    <ul>{% for q in result.needs_grace %}<li>{{ q }}</li>{% endfor %}</ul>
+    {% else %}<p class="muted">Nothing: the brand files covered everything asked.</p>{% endif %}
+
+    {% if result.price_guard_applied or not result.number_check_passed %}
+    <p class="flags">
+      {% if result.price_guard_applied %}The price guard replaced a money amount with the quote line. {% endif %}
+      {% if not result.number_check_passed %}A number in the draft wasn't in the brand files, so a safe reply was used instead.{% endif %}
+    </p>
+    {% endif %}
+
+    <p class="sent">Draft only — nothing has been sent.</p>
+  </section>
+  {% endif %}
+
+  <footer>
+    Demo limits: {{ limits.drafts_per_visitor_per_hour }} drafts per hour per visitor, {{ limits.drafts_per_day }} per day in total.
+    Messages are not stored. · <a href="https://techbygrace.com">techbygrace.com</a>
+  </footer>
+</main>
+<script>
+(function () {
+  var box = document.getElementById("message");
+  var counter = document.getElementById("counter");
+  var max = {{ max_chars }};
+  function update() {
+    var n = box.value.length;
+    counter.textContent = n.toLocaleString("en") + " / " + max.toLocaleString("en");
+    counter.classList.toggle("near", n > max * 0.9);
+  }
+  box.addEventListener("input", update);
+  update();
+
+  document.querySelectorAll(".example").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      box.value = btn.getAttribute("data-message");
+      update();
+      box.focus();
+    });
+  });
+
+  var form = document.getElementById("inquiry-form");
+  var submit = document.getElementById("submit");
+  form.addEventListener("submit", function () {
+    submit.disabled = true;
+    submit.textContent = "Drafting…";
+  });
+  window.addEventListener("pageshow", function () {  // coming back with the Back button
+    submit.disabled = false;
+    submit.textContent = "Draft a reply";
+  });
+
+  var copy = document.getElementById("copy");
+  if (copy) {
+    copy.addEventListener("click", function () {
+      var text = document.getElementById("draft").innerText;
+      function done() { copy.textContent = "Copied"; setTimeout(function () { copy.textContent = "Copy draft"; }, 2000); }
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done);
+      } else {
+        var t = document.createElement("textarea");
+        t.value = text; document.body.appendChild(t); t.select();
+        try { document.execCommand("copy"); done(); } finally { document.body.removeChild(t); }
+      }
+    });
+  }
+})();
+</script>
+</body>
+</html>

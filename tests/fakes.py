@@ -94,6 +94,23 @@ class FakeAPIError(Exception):
         self.code = code
 
 
+class FakeNow:
+    """Stands in for utc_now in the web limiter; advance() moves time on."""
+
+    def __init__(self, start=None) -> None:
+        from datetime import datetime, timezone
+
+        self.t = start or datetime(2026, 11, 9, 20, 0, tzinfo=timezone.utc)
+
+    def __call__(self):
+        return self.t
+
+    def advance(self, **delta) -> None:
+        from datetime import timedelta
+
+        self.t += timedelta(**delta)
+
+
 class FakeClock:
     """Stands in for time.monotonic/time.sleep: sleeping advances the clock.
 

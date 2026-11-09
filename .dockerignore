@@ -1,0 +1,13 @@
+# Only pyproject.toml, uv.lock, README.md, src/ and public_brand/ are needed in the image.
+.git/
+.venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.env
+.env*
+tests/
+scripts/
+# Evaluation inquiries and results (results-*.md) are for development only.
+evaluation/
+SCOPE.md
