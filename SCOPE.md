@@ -42,6 +42,14 @@ The agent only writes drafts. It never sends anything.
   - Web: 1 retry, after 10 s.
 - Never retry 429.
 
+### Engine decisions (2026-11-09)
+
+- **No reply cache.** Client messages are never stored; running the same message again makes a new Gemini call.
+- **JSON output mode** is requested from Gemini (`response_mime_type="application/json"`).
+- **Strict JSON validation.** An unknown category, or a missing or wrongly typed field (`category`, `reply`, `sources`, `needs_grace`), is an error. The agent never guesses or maps it to `other`.
+- **The number check uses all retrieved chunks** (the top 4), not only the ones Gemini cited.
+- **The fallback clears sources.** The safe fallback reply states no facts, so it lists no sources.
+
 ## Web
 
 - FastAPI.
@@ -65,6 +73,7 @@ The agent only writes drafts. It never sends anything.
 ## Known limitations (v1)
 
 - The number check only covers numbers written in digits. Numbers written as words ("three weeks") are not checked.
+- The 180-word limit on replies is an instruction to Gemini, not enforced in code.
 
 ## Out of scope for v1
 

@@ -6,7 +6,13 @@ authors = [
     { name = "Grace Ihuoma Nwakama", email = "goodluckgrace08@gmail.com" }
 ]
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "google-genai>=1.0",
+    "httpx",
+]
+
+[project.scripts]
+client-inquiry = "client_inquiry_agent.cli:main"
 
 [dependency-groups]
 dev = [
