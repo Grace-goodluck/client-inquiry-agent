@@ -2,6 +2,7 @@
 
 import pytest
 
+from client_inquiry_agent.evaluation import load_inquiries
 from client_inquiry_agent.guards import find_money_amounts
 from client_inquiry_agent.retrieval import BRAND_DIR, load_chunks, search
 
@@ -58,7 +59,13 @@ def test_code_ownership_question_finds_ownership_text():
     assert any("After final payment, the client owns" in text for _, _, text in hits)
 
 
-def test_search_returns_at_most_four_by_default_best_first():
+def test_e05_get_started_message_finds_the_proposal_chunk():
+    message = next(i.message for i in load_inquiries() if i.id == "E05-new-project")
+    ids = [f"{r.chunk.file} > {r.chunk.heading}" for r in search(message)]
+    assert "2026-11-03_how-i-work.md > 2. Written proposal and quote" in ids
+
+
+def test_search_returns_at_most_five_by_default_best_first():
     results = search("website timeline payment")
-    assert 0 < len(results) <= 4
+    assert 0 < len(results) <= 5
     assert [r.score for r in results] == sorted((r.score for r in results), reverse=True)

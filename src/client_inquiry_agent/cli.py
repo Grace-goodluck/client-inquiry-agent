@@ -67,6 +67,8 @@ def format_result(result: InquiryResult) -> str:
         notes.append(
             "number check failed (" + ", ".join(result.unsupported_numbers) + "), safe fallback used"
         )
+    if result.dropped_sources:
+        notes.append("source ids from Gemini that matched nothing given: " + "; ".join(result.dropped_sources))
     if notes:
         lines += ["", "Notes:"] + [f"  - {n}" for n in notes]
     lines += ["", "Draft only: nothing has been sent."]

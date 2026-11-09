@@ -107,6 +107,36 @@ def load_inquiries(path: Path = INQUIRIES_FILE) -> list[Inquiry]:
     return parse_inquiries(Path(path).read_text(encoding="utf-8"))
 
 
+def results_path(run_date: str, only: str | None = None) -> Path:
+    """evaluation/results-<date>.md, or results-<date>-only-<ids>.md for a partial run."""
+    name = f"results-{run_date}"
+    if only:
+        ids = "-".join(item.strip() for item in only.split(",") if item.strip())
+        name += "-only-" + re.sub(r"[^A-Za-z0-9-]+", "_", ids)
+    return PROJECT_ROOT / "evaluation" / f"{name}.md"
+
+
+def select_inquiries(inquiries: list[Inquiry], only: str | None) -> list[Inquiry]:
+    """Filter by a comma-separated list such as "E01,E05" or "E01-weekend".
+
+    Each item matches an id exactly or as its prefix before "-" ("E01" matches "E01-weekend").
+    Unknown items raise EvaluationFormatError. Order follows inquiries.md.
+    """
+    if not only:
+        return list(inquiries)
+    wanted = [item.strip() for item in only.split(",") if item.strip()]
+    if not wanted:
+        raise EvaluationFormatError("--only is empty")
+
+    def matches(item: str, inquiry: Inquiry) -> bool:
+        return inquiry.id == item or inquiry.id.startswith(item + "-")
+
+    unknown = [item for item in wanted if not any(matches(item, i) for i in inquiries)]
+    if unknown:
+        raise EvaluationFormatError(f"unknown inquiry id(s): {', '.join(unknown)}")
+    return [i for i in inquiries if any(matches(item, i) for item in wanted)]
+
+
 def check_result(inquiry: Inquiry, result: InquiryResult) -> list[Check]:
     reply = result.reply.lower()
     checks = [
@@ -167,6 +197,8 @@ def render_results(outcomes: list[CaseOutcome], run_date: str, model: str) -> st
             r = o.result
             lines.append(f"**Category:** expected {' or '.join(o.inquiry.categories)}, got {r.category}")
             lines.append(f"**Sources:** {', '.join(r.sources) or '—'}")
+            if r.dropped_sources:
+                lines.append(f"**Dropped source ids (matched nothing given):** {'; '.join(r.dropped_sources)}")
             lines.append(f"**Needs Grace:** {'; '.join(r.needs_grace) or '—'}")
             flags = [
                 f"price guard applied: {'yes' if r.price_guard_applied else 'no'}",

@@ -51,6 +51,11 @@ def test_notes_shown_when_guards_fire(capsys):
     assert "number check failed (3), safe fallback used" in out
 
 
+def test_dropped_source_ids_are_shown(capsys):
+    assert _main(["Weekends?"], gemini_json(sources=[WEEKENDS_ID, "made-up.md"])) == 0
+    assert "source ids from Gemini that matched nothing given: made-up.md" in capsys.readouterr().out
+
+
 def test_empty_message_exit_2(capsys):
     assert _main(["   "]) == 2
     assert "empty" in capsys.readouterr().err

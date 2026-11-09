@@ -10,6 +10,8 @@ from client_inquiry_agent.evaluation import (
     load_inquiries,
     parse_inquiries,
     render_results,
+    results_path,
+    select_inquiries,
 )
 
 INQUIRIES = load_inquiries()
@@ -68,6 +70,41 @@ def test_needs_grace_required_for_unanswerable():
     filled = check_result(case, _result("Grace will follow up.", category="other", needs_grace=["Mobile games?"]))
     assert not all(c.passed for c in empty)
     assert all(c.passed for c in filled)
+
+
+def test_select_all_when_only_not_given():
+    assert select_inquiries(INQUIRIES, None) == INQUIRIES
+
+
+def test_select_by_prefix_or_full_id_in_file_order():
+    picked = select_inquiries(INQUIRIES, "E10, E01,E05-new-project,E08")
+    assert [i.id for i in picked] == ["E01-weekend", "E05-new-project", "E08-unanswerable", "E10-vague"]
+
+
+def test_prefix_does_not_match_a_longer_number():
+    # "E1" must not pick E10 (or anything else): prefixes only match up to the "-".
+    with pytest.raises(EvaluationFormatError, match="E1"):
+        select_inquiries(INQUIRIES, "E1")
+
+
+def test_unknown_only_id_is_an_error():
+    with pytest.raises(EvaluationFormatError, match="E99"):
+        select_inquiries(INQUIRIES, "E01,E99")
+
+
+def test_partial_run_never_overwrites_full_results():
+    full = results_path("2026-11-09")
+    partial = results_path("2026-11-09", "E01,E05,E08,E10")
+    assert full.name == "results-2026-11-09.md"
+    assert partial.name == "results-2026-11-09-only-E01-E05-E08-E10.md"
+    assert full.parent == partial.parent
+
+
+def test_report_lists_dropped_source_ids():
+    result = InquiryResult("policy", "Hi.", (), (), False, True, dropped_sources=("faq.md",))
+    outcome = CaseOutcome(BY_ID["E03-code-ownership"], result)
+    outcome.checks = check_result(outcome.inquiry, result)
+    assert "**Dropped source ids (matched nothing given):** faq.md" in render_results([outcome], "d", "m")
 
 
 def test_bad_format_is_rejected():

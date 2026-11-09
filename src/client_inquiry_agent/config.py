@@ -9,7 +9,7 @@ BRAIN_URL = "http://127.0.0.1:8000"  # Second Brain API, used with --brain
 
 # Input and output (SCOPE.md, Purpose / Web)
 MAX_MESSAGE_CHARS = 2000
-TOP_K = 4
+TOP_K = 5  # was 4; raised 2026-11-09 so E05's proposal chunk (BM25 rank 5) is included
 MAX_REPLY_WORDS = 180
 SIGN_OFF = "Grace, TechByGrace"
 

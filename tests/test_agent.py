@@ -19,7 +19,7 @@ from client_inquiry_agent.agent import (
     label_chunks,
 )
 from client_inquiry_agent.brain_client import BrainReply
-from client_inquiry_agent.config import MAX_MESSAGE_CHARS, SIGN_OFF
+from client_inquiry_agent.config import MAX_MESSAGE_CHARS, SIGN_OFF, TOP_K
 from client_inquiry_agent.guards import QUOTE_LINE
 from client_inquiry_agent.ports import LLMError
 from client_inquiry_agent.retrieval import Chunk
@@ -63,10 +63,11 @@ def test_needs_grace_is_kept():
     assert result.needs_grace == ("Can she do a call at short notice?",)
 
 
-def test_retrieves_top_4_using_the_message():
+def test_retrieves_top_5_using_the_message():
     source = FakeSource()
     _run(gemini_json(), source=source)
-    assert source.queries == [(MESSAGE, 4)]
+    assert TOP_K == 5
+    assert source.queries == [(MESSAGE, 5)]
 
 
 def test_message_is_stripped_before_use():
@@ -104,6 +105,14 @@ def test_prompt_labels_chunks_and_states_the_rules():
     assert SIGN_OFF in prompt
     for category in CATEGORIES:
         assert category in prompt
+
+
+def test_prompt_asks_vague_messages_what_they_need():
+    _, llm = _run(gemini_json())
+    assert (
+        'If the message is vague and does not say what the client needs (for example "hi, interested"), '
+        "the reply should warmly ask what they need." in llm.prompts[0]
+    )
 
 
 def test_prompt_with_no_chunks_says_so():
