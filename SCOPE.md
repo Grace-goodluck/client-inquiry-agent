@@ -82,6 +82,8 @@ The first run failed E01, E05 and E10 because the client's words didn't match Gr
 
 Runner: `uv run python scripts/run_evaluation.py`. `--only E01,E05,E08,E10` runs some inquiries (ids or prefixes before the "-") and writes `results-<date>-only-<ids>.md`, so a partial run never overwrites the full results file (decision 2026-11-09).
 
+Final result (2026-11-11): 10/10 inquiries passed every automatic check (first run 2026-11-09: 6/10); see `evaluation/results-2026-11-11.md`. The fixes were tuned on these same 10 inquiries, so a larger, unseen test set is future work.
+
 ## Known limitations (v1)
 
 - The number check only covers numbers written in digits. Numbers written as words ("three weeks") are not checked.

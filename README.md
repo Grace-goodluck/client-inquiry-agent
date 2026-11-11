@@ -75,14 +75,20 @@ uv run python scripts/run_evaluation.py --only E01,E05
 
 Results are written to `evaluation/results-<date>.md`, with a verdict line under each draft for Grace.
 
-**Final results:** _placeholder — to be filled in after the final evaluation run._
+### Results
 
-| Measure | Result |
+| Run | Passed every automatic check |
 |---|---|
-| Inquiries passing every automatic check | _TBD_ / 10 |
-| Category correct | _TBD_ / 10 |
-| Money amounts in any draft | _TBD_ |
-| Grace's verdicts (usable as-is / small edits / rewrite) | _TBD_ |
+| First run (2026-11-09) | 6/10 |
+| Final run (2026-11-11) | **10/10** ([evaluation/results-2026-11-11.md](evaluation/results-2026-11-11.md)) |
+
+**First run:** the failures were search gaps (for example, "Saturday" didn't match "weekends") plus one Gemini timeout. There were no price, invented-number or policy failures.
+
+**Fixes:** a query synonym list, fallback facts for vague messages, top_k raised from 4 to 5, and clearer source-id matching.
+
+**Final run:** all 10 inquiries had the expected category, no money amounts, and every required fact present.
+
+**Honest note:** the fixes were guided by these same 10 inquiries, so the final run shows those gaps were closed, not general accuracy. A larger, unseen test set is future work.
 
 ## Out of scope for v1
 
